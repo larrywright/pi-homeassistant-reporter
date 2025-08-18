@@ -22,15 +22,16 @@ A lightweight system monitoring solution for Raspberry Pi that collects system m
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/larrywright/pi-homeassistant-reporter.git
+   git clone https://github.com/yourusername/pi-system-monitor.git
    cd pi-system-monitor
    ```
 
 2. **Configure MQTT broker**:
-   Edit `config.py` and set your MQTT broker IP:
-   ```python
-   MQTT_BROKER = "192.168.1.100"  # Replace with your MQTT broker IP
-   MQTT_PORT = 1883
+   Copy the configuration template and edit it:
+   ```bash
+   cp config.py.template config.py
+   nano config.py
+   # Set MQTT_BROKER = "192.168.1.100"  # Replace with your MQTT broker IP
    ```
 
 3. **Install and start the service**:
@@ -44,7 +45,13 @@ That's it! The service will start automatically and begin publishing metrics to 
 
 ### MQTT Settings
 
-Edit `config.py` to configure your MQTT connection:
+Copy the configuration template and customize your settings:
+
+```bash
+cp config.py.template config.py
+```
+
+Then edit `config.py` to configure your MQTT connection:
 
 ```python
 # MQTT Configuration

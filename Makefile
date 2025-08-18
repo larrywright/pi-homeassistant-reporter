@@ -5,10 +5,10 @@ INSTALL_DIR = /opt/pi-monitor
 SERVICE_NAME = pi-monitor
 SERVICE_FILE = $(SERVICE_NAME).service
 PYTHON_SCRIPT = reporter.py
-CONFIG_FILE = config.py
+CONFIG_FILE = config.py.template
 USER = $(shell whoami)
 
-.PHONY: help install uninstall run status logs clean check-deps
+.PHONY: help install uninstall run status logs clean check-deps check-config
 
 help:
 	@echo "Pi System Monitor - Available targets:"
@@ -19,8 +19,25 @@ help:
 	@echo "  logs        - Show service logs"
 	@echo "  clean       - Clean up temporary files"
 	@echo "  check-deps  - Check if required dependencies are available"
+	@echo ""
+	@echo "Before installing, copy config.py.template to config.py and edit your settings:"
+	@echo "  cp config.py.template config.py && nano config.py"
 
-check-deps:
+check-config:
+	@if [ ! -f config.py ]; then \
+		echo "Creating config.py from template..."; \
+		cp config.py.template config.py; \
+		echo ""; \
+		echo "⚠️  Please edit config.py and set your MQTT_BROKER before continuing!"; \
+		echo "   nano config.py"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@grep -q "192.168.1.100" config.py && { \
+		echo "⚠️  Please update MQTT_BROKER in config.py before installing!"; \
+		echo "   nano config.py"; \
+		exit 1; \
+	} || true
 	@echo "Checking dependencies..."
 	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
 	@command -v systemctl >/dev/null 2>&1 || { echo "ERROR: systemd not available"; exit 1; }
@@ -35,7 +52,7 @@ install: check-deps
 	
 	# Copy files
 	sudo cp $(PYTHON_SCRIPT) $(INSTALL_DIR)/
-	sudo cp $(CONFIG_FILE) $(INSTALL_DIR)/
+	sudo cp config.py $(INSTALL_DIR)/
 	sudo cp requirements.txt $(INSTALL_DIR)/
 	
 	# Set ownership
@@ -102,7 +119,7 @@ uninstall:
 	
 	@echo "Uninstallation complete!"
 
-run:
+run: check-config
 	@echo "Running Pi System Monitor directly..."
 	uv venv --quiet
 	uv pip install -r requirements.txt --quiet
