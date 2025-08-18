@@ -38,6 +38,8 @@ check-config:
 		echo "   nano config.py"; \
 		exit 1; \
 	} || true
+
+check-deps: check-config
 	@echo "Checking dependencies..."
 	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
 	@command -v systemctl >/dev/null 2>&1 || { echo "ERROR: systemd not available"; exit 1; }
