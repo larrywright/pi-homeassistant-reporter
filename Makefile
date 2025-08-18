@@ -48,77 +48,48 @@ check-deps: check-config
 
 install: check-deps
 	@echo "Installing Pi System Monitor..."
-	
-	# Create installation directory
 	sudo mkdir -p $(INSTALL_DIR)
-	
-	# Copy files
 	sudo cp $(PYTHON_SCRIPT) $(INSTALL_DIR)/
 	sudo cp config.py $(INSTALL_DIR)/
 	sudo cp requirements.txt $(INSTALL_DIR)/
-	
-	# Set ownership
 	sudo chown -R $(USER):$(USER) $(INSTALL_DIR)
-	
-	# Create virtual environment with uv
 	cd $(INSTALL_DIR) && uv venv
 	cd $(INSTALL_DIR) && uv pip install -r requirements.txt
-	
-	# Create systemd service file
-	sudo tee /etc/systemd/system/$(SERVICE_FILE) > /dev/null << 'EOF'
-[Unit]
-Description=Pi System Metrics Monitor
-After=network.target
-Wants=network.target
-
-[Service]
-Type=simple
-User=$(USER)
-Group=$(USER)
-WorkingDirectory=$(INSTALL_DIR)
-ExecStart=$(INSTALL_DIR)/.venv/bin/python -u $(INSTALL_DIR)/$(PYTHON_SCRIPT)
-Restart=always
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-[Install]
-WantedBy=multi-user.target
-EOF
-	
-	# Replace USER placeholder in service file
-	sudo sed -i 's/$(USER)/$(USER)/g' /etc/systemd/system/$(SERVICE_FILE)
-	
-	# Reload systemd and enable service
+	@echo "Creating systemd service..."
+	@echo '[Unit]' | sudo tee /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'Description=Pi System Metrics Monitor' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'After=network.target' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'Wants=network.target' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo '' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo '[Service]' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'Type=simple' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'User=$(USER)' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'Group=$(USER)' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'WorkingDirectory=$(INSTALL_DIR)' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'ExecStart=$(INSTALL_DIR)/.venv/bin/python -u $(INSTALL_DIR)/$(PYTHON_SCRIPT)' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'Restart=always' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'RestartSec=10' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'StandardOutput=journal' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'StandardError=journal' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo '' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo '[Install]' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
+	@echo 'WantedBy=multi-user.target' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
 	sudo systemctl daemon-reload
 	sudo systemctl enable $(SERVICE_NAME)
 	sudo systemctl start $(SERVICE_NAME)
-	
 	@echo ""
 	@echo "Installation complete!"
 	@echo "Service status:"
 	@sudo systemctl status $(SERVICE_NAME) --no-pager -l
-	@echo ""
-	@echo "To view logs: make logs"
-	@echo "To check status: make status"
 
 uninstall:
 	@echo "Uninstalling Pi System Monitor..."
-	
-	# Stop and disable service
 	-sudo systemctl stop $(SERVICE_NAME)
 	-sudo systemctl disable $(SERVICE_NAME)
-	
-	# Remove service file
 	-sudo rm -f /etc/systemd/system/$(SERVICE_FILE)
-	
-	# Reload systemd
 	sudo systemctl daemon-reload
-	
-	# Remove installation directory
 	sudo rm -rf $(INSTALL_DIR)
-	
 	@echo "Uninstallation complete!"
 
 run: check-config
