@@ -7,6 +7,7 @@ SERVICE_FILE = $(SERVICE_NAME).service
 PYTHON_SCRIPT = reporter.py
 CONFIG_FILE = config.py.template
 USER = $(shell whoami)
+UV_PATH = $(shell which uv 2>/dev/null || echo "$$HOME/.local/bin/uv")
 
 .PHONY: help install uninstall run status logs clean check-deps check-config
 
@@ -41,7 +42,10 @@ check-config:
 
 check-deps: check-config
 	@echo "Checking dependencies..."
-	@command -v uv >/dev/null 2>&1 || { echo "Installing uv..."; curl -LsSf https://astral.sh/uv/install.sh | sh; }
+	@if ! command -v uv >/dev/null 2>&1 && ! test -f "$$HOME/.local/bin/uv"; then \
+		echo "Installing uv..."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
+	fi
 	@command -v systemctl >/dev/null 2>&1 || { echo "ERROR: systemd not available"; exit 1; }
 	@systemctl --version >/dev/null 2>&1 || { echo "ERROR: systemd not running"; exit 1; }
 	@echo "Dependencies check passed"
@@ -53,8 +57,8 @@ install: check-deps
 	sudo cp config.py $(INSTALL_DIR)/
 	sudo cp requirements.txt $(INSTALL_DIR)/
 	sudo chown -R $(USER):$(USER) $(INSTALL_DIR)
-	cd $(INSTALL_DIR) && uv venv
-	cd $(INSTALL_DIR) && uv pip install -r requirements.txt
+	cd $(INSTALL_DIR) && $(UV_PATH) venv
+	cd $(INSTALL_DIR) && $(UV_PATH) pip install -r requirements.txt
 	@echo "Creating systemd service..."
 	@echo '[Unit]' | sudo tee /etc/systemd/system/$(SERVICE_FILE) > /dev/null
 	@echo 'Description=Pi System Metrics Monitor' | sudo tee -a /etc/systemd/system/$(SERVICE_FILE) > /dev/null
@@ -94,8 +98,8 @@ uninstall:
 
 run: check-config
 	@echo "Running Pi System Monitor directly..."
-	uv venv --quiet
-	uv pip install -r requirements.txt --quiet
+	$(UV_PATH) venv --quiet
+	$(UV_PATH) pip install -r requirements.txt --quiet
 	.venv/bin/python $(PYTHON_SCRIPT)
 
 status:
