@@ -1,97 +1,67 @@
-# Home Assistant Dashboard Card for Pi System Monitor
-# Replace 'radio' with your Pi's hostname throughout this file
-
 type: vertical-stack
 cards:
   - type: markdown
-    content: |
-      ## 🖥️ Raspberry Pi: {{ states('sensor.raspberry_pi_radio_radio_uptime_days') | float(0) | round(1) }} days uptime
-  
-  - type: horizontal-stack
-    cards:
-      # CPU Section
-      - type: vertical-stack
-        cards:
-          - type: gauge
-            entity: sensor.raspberry_pi_radio_radio_cpu_load_1min
-            name: CPU Load (1min)
-            min: 0
-            max: 4
-            severity:
-              green: 0
-              yellow: 2
-              red: 3
-          - type: entity
-            entity: sensor.raspberry_pi_radio_radio_cpu_temp_celsius
-            name: CPU Temperature
-            icon: mdi:thermometer
-      
-      # Memory Section  
-      - type: vertical-stack
-        cards:
-          - type: gauge
-            entity: sensor.raspberry_pi_radio_radio_memory_used_percent
-            name: Memory Usage
-            min: 0
-            max: 100
-            severity:
-              green: 0
-              yellow: 70
-              red: 85
-          - type: entity
-            entity: sensor.raspberry_pi_radio_radio_memory_used_gb
-            name: Memory Used
-            icon: mdi:memory
-      
-      # Storage Section
-      - type: vertical-stack
-        cards:
-          - type: gauge
-            entity: sensor.raspberry_pi_radio_radio_disk_used_percent
-            name: Disk Usage
-            min: 0
-            max: 100
-            severity:
-              green: 0
-              yellow: 70
-              red: 85
-          - type: entity
-            entity: sensor.raspberry_pi_radio_radio_disk_free_gb
-            name: Disk Free
-            icon: mdi:harddisk
-
-  # Network and I/O Stats
+    content: >
+      ## 🖥️ Radio: {{ states('sensor.raspberry_pi_radio_radio_uptime_days') |
+      float(0) | round(1) }} days uptime
+  - type: gauge
+    entity: sensor.raspberry_pi_radio_radio_cpu_load_1min
+    name: CPU Load (1min)
+    min: 0
+    max: 4
+    severity:
+      green: 0
+      yellow: 2
+      red: 3
+  - type: gauge
+    entity: sensor.raspberry_pi_radio_radio_memory_used_percent
+    name: Memory Usage
+    min: 0
+    max: 100
+    severity:
+      green: 0
+      yellow: 70
+      red: 85
+  - type: gauge
+    entity: sensor.raspberry_pi_radio_radio_disk_used_percent
+    name: Disk Usage
+    min: 0
+    max: 100
+    severity:
+      green: 0
+      yellow: 70
+      red: 85
   - type: entities
-    title: Network & I/O Statistics
+    title: Key Metrics
     show_header_toggle: false
     entities:
-      - entity: sensor.raspberry_pi_radio_radio_network_rx_bytes_total
-        name: Network RX Total
-        icon: mdi:download-network
-      - entity: sensor.raspberry_pi_radio_radio_network_tx_bytes_total  
-        name: Network TX Total
-        icon: mdi:upload-network
-      - entity: sensor.raspberry_pi_radio_radio_disk_read_bytes_total
-        name: Disk Read Total
-        icon: mdi:folder-download
-      - entity: sensor.raspberry_pi_radio_radio_disk_write_bytes_total
-        name: Disk Write Total
-        icon: mdi:folder-upload
-      - entity: sensor.raspberry_pi_radio_radio_cpu_load_5min
-        name: CPU Load (5min)
-        icon: mdi:chip
-
-  # System Information
+      - entity: sensor.raspberry_pi_radio_radio_cpu_temp_celsius
+        name: CPU Temperature
+        icon: mdi:thermometer
+      - entity: sensor.raspberry_pi_radio_radio_memory_used_gb
+        name: Memory Used
+        icon: mdi:memory
+        secondary_info: >
+          {{ states('sensor.raspberry_pi_radio_radio_memory_used_gb') | float(0)
+          | round(2) }} / {{
+          states('sensor.raspberry_pi_radio_radio_memory_total_gb') | float(0) |
+          round(2) }} GB
+      - entity: sensor.raspberry_pi_radio_radio_disk_free_gb
+        name: Disk Free
+        icon: mdi:harddisk
+        secondary_info: >
+          {{ states('sensor.raspberry_pi_radio_radio_disk_free_gb') | float(0) |
+          round(2) }} / {{
+          states('sensor.raspberry_pi_radio_radio_disk_total_gb') | float(0) |
+          round(2) }} GB
   - type: entities
     title: System Information
     show_header_toggle: false
     entities:
-      - entity: sensor.raspberry_pi_radio_radio_uptime_seconds
-        name: Uptime (seconds)
+      - entity: sensor.raspberry_pi_radio_radio_uptime_days
+        name: Uptime
         icon: mdi:clock-outline
-      - entity: sensor.raspberry_pi_radio_radio_memory_total_gb
-        name: Total Memory
-        icon: mdi:memory
-      - entity: sensor.raspberry_pi_radio_radio_disk_total_gb
-        name: Total Disk Space
-        icon: mdi:harddisk
+        unit: days
+      - entity: sensor.raspberry_pi_radio_radio_cpu_load_5min
+        name: CPU Load (5min)
+        icon: mdi:chip
